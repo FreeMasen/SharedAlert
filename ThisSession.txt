@@ -1,0 +1,16 @@
+Option Explicit
+'define a variable that has events of the items type
+Public WithEvents items As Outlook.items
+
+Private Sub Application_Startup()
+	Set items = setItems
+End Sub
+
+'when a new item is added to our shared inbox items
+Private Sub Items_ItemAdd(ByVal Item As Object)
+	If item.Class = Outlook.olMail Then
+		Dim frm As frmNewMsg
+        Set frm = New frmNewMsg
+        frm.ShowForm Item
+	End If
+End Sub
