@@ -13,7 +13,7 @@ Set objNS = olApp.GetNamespace("MAPI")
 
 'then we want to generate a recipient from the namespace and resolve it
 Dim rec As Recipient
-Set rec = objNS.CreateRecipient("Trustopsproductmanagement@wellsfargo.com")
+Set rec = objNS.CreateRecipient("SharedInbox@Email.Com")
 rec.Resolve
 
 'now we will get our items from the default folder of a shared account
