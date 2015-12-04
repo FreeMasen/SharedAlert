@@ -3,5 +3,5 @@ Public Declare PtrSafe Function sndPlaySound32 Lib "winmm.dll" Alias "sndPlaySou
             (ByVal lpszSoundName As String, ByVal uFlags As Long) As Long
 
 Public Sub playSound()
-Call sndPlaySound32("C:\Windows\Media\Windows User Account Control.wav", 0)
+Call sndPlaySound32("File Path to Sound File", 0)
 End Sub
