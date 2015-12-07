@@ -5,7 +5,7 @@ Public WithEvents items As Outlook.items
 Private Sub Application_Startup()
 	'call the method from modSharedFolderItems.bas 
 	'to get the items for our shared inbox
-	Set items = setItems
+	Set items = setItems sharedEmailAddress@company.com
 End Sub
 
 'when a new item is added to our shared inbox items
