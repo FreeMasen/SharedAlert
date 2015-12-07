@@ -3,14 +3,21 @@ Option Explicit
 Public WithEvents items As Outlook.items
 
 Private Sub Application_Startup()
+	'call the method from modSharedFolderItems.bas 
+	'to get the items for our shared inbox
 	Set items = setItems
 End Sub
 
 'when a new item is added to our shared inbox items
 Private Sub Items_ItemAdd(ByVal Item As Object)
+	'check to make sure it is a outlook mailitem
+	'this is important for the label updates and the 
+	'inspector creation
 	If item.Class = Outlook.olMail Then
+		'create a new form and use the overriden show method
+		'passing the item that triggered the event
 		Dim frm As frmNewMsg
-        Set frm = New frmNewMsg
-        frm.ShowForm Item
+        	Set frm = New frmNewMsg
+        	frm.ShowForm Item
 	End If
 End Sub
