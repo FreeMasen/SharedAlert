@@ -89,8 +89,8 @@ Public Sub ShowForm(newItem As mailItem)
     Me.lblSender.Caption = Item.sender
     'set the window handle to this window's handle
     hwnd = FindWindow(vbNullString, Me.Caption)
-    Dim IStyle As Long
-        hwnd = FindWindow(vbNullString, Me.Caption)
+    Dim Style As Long
+    hwnd = FindWindow(vbNullString, Me.Caption)
     'Change the window's partent to the desktop
     SetWindowLongA hwnd, GWL_HWNDPARENT, GetDesktopWindow
     'variable for the windows type section of memory
