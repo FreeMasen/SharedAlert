@@ -1,0 +1,123 @@
+Attribute VB_Name = "modAssignment"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Explicit
+'Check if the name variable apperas in the categories
+Public Function checkCategory(item As MailItem, Name As String) As Boolean
+On Error GoTo ErrHandler
+    
+    logProcedure "|- enter checkCategory"
+    checkCategory = False
+    Dim cats() As String
+    cats = Split(item.categories)
+    logProcedure "create array of categories"
+    logProcedure "enter for cat loop"
+    For Each cat In cats
+        If cat = Name Then
+        logProcedure "if cat = " & Name & " passed"
+            checkCategory = True
+        End If
+    Next
+    logProcedure "exit cat loop"
+logProcedure "exit checkCategory -|"
+Exit Function
+    
+    
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "checkCategory", errorDescription, errorNumber
+    logTxt "checkCategory", errorDescription, errorNumber
+    Resume Next
+End Function
+
+'If the name variable is the user property value
+Public Function checkUserProperty(item As MailItem, Name As String) As Boolean
+On Error GoTo ErrHandler
+
+    logProcedure "|- Enter checkUserProperty"
+    checkUserProperty = False
+    If item.UserProperties.count < 1 Then
+        logProcedure "passed if user properties < 1"
+        item.UserProperties.Add "Assn", olText, False
+        logProcedure "userprop 'Assn' added"
+    End If
+    If item.UserProperties.item(1).Type = olKeywords Then
+            logProcedure "passed old property check"
+            item.UserProperties.Remove (1) 'remove old version of property
+            logProcedure "removed old property"
+    End If
+    
+    Dim userProp As UserProperty
+    Set userProp = item.UserProperties.Find("Assn")
+    logProcedure "assign userprop to variable"
+    logProcedure "enter if userprop = name"
+    If userProp.Value = Name Then
+        logProcedure "pass userprop.value = " & Name
+        checkUserProperty = True
+    End If
+logProcedure "exit checkUserProperty -|"
+Exit Function
+
+
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "checkUserProperty", errorDescription, errorNumber
+    logTxt "checkUserProperty", errorDescription, errorNumber
+    Resume Next
+End Function
+
+'check if the name is in the category but not in the userproperty
+'this is used to ensure the alert is only shown when first assigned
+Public Function CheckItem(item As MailItem, Name As String) As Boolean
+On Error GoTo ErrHandler
+logProcedure "|- enter CheckItem"
+    CheckItem = False
+    logProcedure "call checkCategory"
+    If checkCategory(item, Name) Then
+        logProcedure "checkCategory True, call Not checkUserProperty"
+        If Not checkUserProperty(item, Name) Then
+            logProcedure "checkUserProperty False, call setProperty"
+            setProperty item, Name
+            CheckItem = True
+        End If
+    End If
+logProcedure "exit CheckItem -|"
+Exit Function
+
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "CheckItem", errorDescription, errorNumber
+    logTxt "CheckItem", errorDescription, errorNumber
+    Resume Next
+End Function
+
+'set the name variale to the value of the user property
+Private Sub setProperty(item As MailItem, Name As Variant)
+On Error GoTo ErrHandler
+logProcedure "|- enter setProperty"
+logProcedure "add value to prop"
+    item.UserProperties.Find("Assn").Value = Name
+logProcedure "save item"
+    item.Save
+logProcedure "exit setProperty -|"
+Exit Sub
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "setProperty", errorDescription, errorNumber
+    logTxt "setProperty", errorDescription, errorNumber
+    Resume Next
+End Sub
