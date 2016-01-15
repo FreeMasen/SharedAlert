@@ -1,0 +1,309 @@
+
+Attribute VB_Name = "frmSettings"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+Option Explicit
+Private Sub btnSet_Click()
+On Error GoTo ErrHandler
+    If cboRole.ListIndex > -1 And cboNew.ListIndex > -1 And cboAsn.ListIndex > -1 Then
+        setSettings cboRole.ListIndex, convertColor(cboNew.ListIndex), _
+                    convertColor(cboAsn.ListIndex)
+        saveSettings
+    End If
+    Unload Me
+Exit Sub
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "frmSettings.btnSet_Click", errorDescription, errorNumber
+    logTxt "frmSettings.btnSet_Click", errorDescription, errorNumber
+Resume Next
+End Sub
+    
+Private Sub btnSetPos_Click()
+On Error GoTo ErrHandler
+    Set frm = New frmNewMsg
+    frm.btnComplete.Visible = True
+    frm.setPosition CInt(ThisOutlookSession.position(0)), _
+                    CInt(ThisOutlookSession.position(1))
+    frm.Show
+    Exit Sub
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "frmSettings.btnSetPos_Click", errorDescription, errorNumber
+    logTxt " frmSettings.btnSetPos_Click", errorDescription, errorNumber
+Resume Next
+End Sub
+
+Private Sub cboAsn_Change()
+On Error GoTo ErrHandler
+    If cboAsn.ListIndex > -1 Then
+        Dim color As Variant
+        color = convertColor(cboAsn.ListIndex)
+        lblAsn.backColor = RGB(color(0), color(1), color(2))
+        If cboAsn.ListIndex = 10 Or cboAsn.ListIndex = 8 Then
+            lblAsn.ForeColor = RGB(224, 224, 224)
+        Else
+            lblAsn.ForeColor = RGB(0, 0, 0)
+        End If
+    End If
+    Exit Sub
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "frmSettings.cboAsn_Change", errorDescription, errorNumber
+    logTxt " frmSettings.cboAsn_Change", errorDescription, errorNumber
+Resume Next
+End Sub
+
+Private Sub cboNew_Change()
+On Error GoTo ErrHandler
+    If cboNew.ListIndex > -1 Then
+        Dim color As Variant
+        color = convertColor(cboNew.ListIndex)
+            lblNew.backColor = RGB(color(0), color(1), color(2))
+        If cboNew.ListIndex = 10 Or cboNew.ListIndex = 8 Then
+            lblNew.ForeColor = RGB(224, 224, 224)
+        Else
+            lblnewForeColor = RGB(0, 0, 0)
+        End If
+    End If
+    Exit Sub
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "frmSettings.cboNew_Change", errorDescription, errorNumber
+    logTxt " frmSettings.cboNew_Change", errorDescription, errorNumber
+Resume Next
+End Sub
+
+
+Private Sub UserForm_Initialize()
+On Error GoTo ErrHandler
+    'role dropdown menu options
+    cboRole.AddItem "Monitor"
+    cboRole.AddItem "Assignments Only"
+    cboRole.AddItem "No Alerts"
+    
+    'New item color menu options
+    cboNew.AddItem "Red"
+    cboNew.AddItem "Pink"
+    cboNew.AddItem "Orange"
+    cboNew.AddItem "Peach"
+    cboNew.AddItem "Yellow"
+    cboNew.AddItem "Pale Yellow"
+    cboNew.AddItem "Green"
+    cboNew.AddItem "Mint Green"
+    cboNew.AddItem "Blue"
+    cboNew.AddItem "Powder Blue"
+    cboNew.AddItem "Purple"
+    cboNew.AddItem "Lavender"
+    
+    'New assignment color menu options
+    cboAsn.AddItem "Red"
+    cboAsn.AddItem "Pink"
+    cboAsn.AddItem "Orange"
+    cboAsn.AddItem "Peach"
+    cboAsn.AddItem "Yellow"
+    cboAsn.AddItem "Pale Yellow"
+    cboAsn.AddItem "Green"
+    cboAsn.AddItem "Mint Green"
+    cboAsn.AddItem "Blue"
+    cboAsn.AddItem "Powder Blue"
+    cboAsn.AddItem "Purple"
+    cboAsn.AddItem "Lavender"
+    
+    'set the values of menus to current settings
+    cboRole.ListIndex = ThisOutlookSession.UserRole
+    cboNew.ListIndex = revertColor(ThisOutlookSession.newMsgAlertColor)
+    cboAsn.ListIndex = revertColor(ThisOutlookSession.newAssnAlertColor)
+    
+    'set the fore color of the labels
+    If cboNew.ListIndex = 9 Or cboNewListIndex = 10 Then
+        setNewLabel "light"
+    Else
+        setNewLabel "dark"
+    End If
+        If cboAsn.ListIndex = 9 Or cboNewListIndex = 10 Then
+        setAsnLabel "light"
+    Else
+        setAsnLabel "dark"
+    End If
+    Exit Sub
+    
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "frmSettings.UserForm_Initialize", errorDescription, errorNumber
+    logTxt " frmSettings.UserForm_Initialize", errorDescription, errorNumber
+Resume Next
+End Sub
+
+Public Function convertColor(selection As Integer) As Variant
+On Error GoTo ErrHandler
+    Dim RGB(2) As Integer
+    If selection > -1 Then
+        If selection = 0 Then
+        'Red
+        RGB(0) = 255
+        RGB(1) = 0
+        RGB(2) = 0
+        ElseIf selection = 1 Then
+        'Pink
+        RGB(0) = 255
+        RGB(1) = 204
+        RGB(2) = 204
+        ElseIf selection = 2 Then
+        'Orange
+        RGB(0) = 255
+        RGB(1) = 128
+        RGB(2) = 0
+        ElseIf selection = 3 Then
+        'Peach
+        RGB(0) = 255
+        RGB(1) = 204
+        RGB(2) = 153
+        ElseIf selection = 4 Then
+        'Yellow
+        RGB(0) = 255
+        RGB(1) = 255
+        RGB(2) = 0
+        ElseIf selection = 5 Then
+        'Pale Yellow
+        RGB(0) = 255
+        RGB(1) = 255
+        RGB(2) = 204
+        ElseIf selection = 6 Then
+        'Green
+        RGB(0) = 0
+        RGB(1) = 255
+        RGB(2) = 0
+        ElseIf selection = 7 Then
+        'Mint Green
+        RGB(0) = 204
+        RGB(1) = 255
+        RGB(2) = 229
+        ElseIf selection = 8 Then
+        'Blue
+        RGB(0) = 0
+        RGB(1) = 0
+        RGB(2) = 255
+        ElseIf selection = 9 Then
+        'Powder Blue
+        RGB(0) = 204
+        RGB(1) = 229
+        RGB(2) = 255
+        ElseIf selection = 10 Then
+        'Purple
+        RGB(0) = 102
+        RGB(1) = 0
+        RGB(2) = 204
+        ElseIf selection = 11 Then
+        'Lavender
+        RGB(0) = 229
+        RGB(1) = 204
+        RGB(2) = 255
+        End If
+    End If
+        convertColor = RGB
+        Exit Function
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "frmSettings.convertColor", errorDescription, errorNumber
+    logTxt " frmSettings.convertColor", errorDescription, errorNumber
+Resume Next
+End Function
+
+Public Function revertColor(RGB As Variant) As Integer
+On Error GoTo ErrHandler
+    If RGB(0) = 255 And RGB(1) = 0 And RGB(2) = 0 Then
+        revertColor = 0
+    ElseIf RGB(0) = 255 And RGB(1) = 204 And RGB(2) = 204 Then
+        revertColor = 1
+    ElseIf RGB(0) = 255 And RGB(1) = 128 And RGB(2) = 0 Then
+        revertColor = 2
+    ElseIf RGB(0) = 255 And RGB(1) = 204 And RGB(2) = 153 Then
+        revertColor = 3
+    ElseIf RGB(0) = 255 And RGB(1) = 255 And RGB(2) = 0 Then
+        revertColor = 4
+    ElseIf RGB(0) = 255 And RGB(1) = 255 And RGB(2) = 204 Then
+        revertColor = 5
+    ElseIf RGB(0) = 0 And RGB(1) = 255 And RGB(2) = 0 Then
+        revertColor = 6
+    ElseIf RGB(0) = 204 And RGB(1) = 255 And RGB(2) = 229 Then
+        revertColor = 7
+    ElseIf RGB(0) = 0 And RGB(1) = 0 And RGB(2) = 255 Then
+        revertColor = 8
+    ElseIf RGB(0) = 204 And RGB(1) = 229 And RGB(2) = 255 Then
+        revertColor = 9
+    ElseIf RGB(0) = 102 And RGB(1) = 0 And RGB(2) = 204 Then
+        revertColor = 10
+    ElseIf RGB(0) = 229 And RGB(1) = 204 And RGB(2) = 255 Then
+        revertColor = 11
+    End If
+Exit Function
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "frmSettings.revertColor", errorDescription, errorNumber
+    logTxt " frmSettings.revertColor", errorDescription, errorNumber
+Resume Next
+End Function
+
+Public Sub setNewLabel(color As Variant)
+On Error GoTo ErrHandling
+    If color = "dark" Then
+
+        Me.lblNew.ForeColor = RGB(0, 0, 0)
+    ElseIf color = "light" Then
+
+        Me.lblNew.ForeColor = RGB(224, 224, 224)
+    End If
+Exit Sub
+ErrHandling:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "frmSettings.setNewLabel", errorDescription, errorNumber
+    logTxt " frmSettings.setNewLabel", errorDescription, errorNumber
+End Sub
+
+Public Sub setAsnLabel(color As Variant)
+On Error GoTo ErrHandling
+    If color = "dark" Then
+        Me.lblAsn.ForeColor = RGB(0, 0, 0)
+
+    ElseIf color = "light" Then
+        Me.lblAsn.ForeColor = RGB(224, 224, 224)
+
+    End If
+Exit Sub
+ErrHandling:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "frmSettings.setAsnLabel", errorDescription, errorNumber
+    logTxt " frmSettings.setAsnLabel", errorDescription, errorNumber
+End Sub
+
