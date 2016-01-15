@@ -1,0 +1,23 @@
+Attribute VB_Name = "modShowInspector"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Explicit
+Sub showInsp(item As Object)
+On Error GoTo ErrHandler
+Dim xitem As MailItem
+Set xitem = item
+Set insp = Application.inspectors.Add(item)
+
+insp.Display
+Exit Sub
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "showInsp", errorDescription, errorNumber
+    logTxt "showInsp", errorDescription, errorNumber
+End Sub
+
