@@ -1,0 +1,58 @@
+Attribute VB_Name = "modShowForm"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Explicit
+
+Public Sub showAlert(newItem As MailItem, title As String, backColor As Variant, pos As Variant)
+On Error GoTo ErrHandler
+logProcedure "|- enter showAlert"
+    Dim frm As frmNewMsg
+    logProcedure "assign new form"
+    Set frm = New frmNewMsg
+    DoEvents
+    logProcedure "assign new label with " & title
+    frm.lblTitle = title
+    DoEvents
+    logProcedure "set backColor of frm"
+    If IsArray(backColor) Then
+        frm.backColor = RGB(backColor(0), backColor(1), backColor(2))
+        DoEvents
+    End If
+    logProcedure "if color dark, set labelcolor to light"
+    If (backColor(0) = 102 And backColor(1) = 0 And backColor(2) = 204) Or _
+        (backColor(0) = 0 And backColor(1) = 0 And backColor(2) = 255) Or _
+        (backColor(0) = 255 And backColor(1) = 0 And backColor(2) = 0) Then
+        frm.setLabelColor "light"
+        DoEvents
+    End If
+    
+    logProcedure "set position of from"
+    If IsArray(pos) Then
+        frm.setPosition CInt(pos(0)), CInt(pos(1))
+        DoEvents
+    End If
+    
+    logProcedure "call frm.showForm"
+    frm.showForm newItem, pos
+    DoEvents
+    logProcedure "exit showAlert -|"
+Exit Sub
+
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "showAlert", errorDescription, errorNumber
+    logTxt "showAlert", errorDescription, errorNumber
+    Resume Next
+End Sub
+
+
+Public Sub showTestAlert()
+    Dim item As MailItem
+    Set item = ThisOutlookSession.items.GetFirst
+    showAlert item, "Testing", ThisOutlookSession.newAssnAlertColor, ThisOutlookSession.position
+End Sub
