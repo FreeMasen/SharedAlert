@@ -1,23 +1,143 @@
+Attribute VB_Name = "ThisOutlookSession"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
 Option Explicit
-'define a variable that has events of the items type
+
 Public WithEvents items As Outlook.items
+Attribute items.VB_VarHelpID = -1
+Public WithEvents localitems As Outlook.items
+Attribute localitems.VB_VarHelpID = -1
+'this will hold the message that is getting a category assignment
+'this is required because we want to get the customer property change event
+Public WithEvents newCatMailItem As Outlook.MailItem
+Attribute newCatMailItem.VB_VarHelpID = -1
+'this holds the setting for when alerts will show for the user
+Public UserRole As Integer
+Public newMsgAlertColor As Variant '(3 integer array)
+Public newAssnAlertColor As Variant '(3 integer array)
+Public position As Variant '(2 integer array)
 
 Private Sub Application_Startup()
-	'call the method from modSharedFolderItems.bas 
-	'to get the items for our shared inbox
-	Set items = setItems sharedEmailAddress@company.com
+On Error GoTo ErrHandler
+
+    Set items = setItems
+    getSettings
+    
+Exit Sub
+
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "Application_Startup", errorDescription, errorNumber
+    logTxt "Application_Startup", errorDescription, errorNumber
+Resume Next
 End Sub
 
-'when a new item is added to our shared inbox items
-Private Sub Items_ItemAdd(ByVal Item As Object)
-	'check to make sure it is a outlook mailitem
-	'this is important for the label updates and the 
-	'inspector creation
-	If item.Class = Outlook.olMail Then
-		'create a new form and use the overriden show method
-		'passing the item that triggered the event
-		Dim frm As frmNewMsg
-        	Set frm = New frmNewMsg
-        	frm.ShowForm Item
-	End If
+Private Sub setLocal()
+    Set localitems = Outlook.Application.GetNamespace("MAPI").GetDefaultFolder(olFolderInbox).items
+End Sub
+
+Private Sub Items_ItemAdd(ByVal item As Object)
+On Error GoTo ErrHandler
+logProcedure "|- enter Items_ItemAdd"
+    If UserRole = 0 Then
+    logProcedure "pass userrole"
+        If item.Class = Outlook.olMail Then
+        logProcedure "pass item.class, call showAlert"
+            showAlert item, "New TOPM Message", newMsgAlertColor, position
+        End If
+    End If
+logProcedure "exit Items_ItemAdd -|"
+Exit Sub
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "Items_ItemAdd", errorDescription, errorNumber
+    logTxt " Items_ItemAdd", errorDescription, errorNumber
+Resume Next
+End Sub
+
+Private Sub items_ItemChange(ByVal item As Object)
+On Error GoTo ErrHandler
+    
+    If UserRole <= 2 Then
+        If item.Class = Outlook.olMail Then
+            If item.MessageClass = "IPM.Note" Then
+                Set newCatMailItem = item
+                CheckItem newCatMailItem, "Robert"
+                Set newCatMailItem = Nothing
+            End If
+        End If
+    End If
+
+Exit Sub
+ErrHandler:
+    'a 430 error is a message of the wrong sub-type
+    'this error usually avoided by the MessageClass If above
+    'but not 100% of the time. It appears that this error is throw
+    'when the a message is deleted before an alert can be shown
+    If Err.number = 430 Then
+       Exit Sub
+    End If
+    logTxt " items_ItemChange", Err.description, Err.number
+Resume Next
+End Sub
+
+Private Sub newCatMailItem_CustomPropertyChange(ByVal Name As String)
+On Error GoTo ErrHandler
+logProcedure "|-Enter newCatmailItem_CustomerPropertyChange"
+    If Name = "Assn" Then
+        logProcedure "pass property name = 'assn', call checkUserProprty"
+        If checkUserProperty(newCatMailItem, "Robert") Then
+        logProcedure "passCheckUserProperty, call showAlert"
+        showAlert newCatMailItem, "New TOPM Assignment", newAssnAlertColor, position
+    End If
+    End If
+logProcedure "exit newcatMailItem_CustomerPropertyChange -|"
+Exit Sub
+
+ErrHandler:
+    logTxt "newCatMailItem_CustomPropertyChange", Err.description, Err.number
+End Sub
+
+Private Sub localitems_ItemAdd(ByVal item As Object)
+On Error GoTo ErrHandler
+
+    If UserRole = 0 Then
+        If item.Class = Outlook.olMail Then
+            If item.MessageClass = "IPM.Note" Then
+                showAlert item, "New TOPM Message", newMsgAlertColor, position
+            Else
+                logTxt "NON-IPM.NOTE", item.MessageClass, 999
+            End If
+        End If
+    End If
+
+Exit Sub
+ErrHandler:
+    logTxt "localitems_ItemAdd", Err.description, Err.number
+Resume Next
+End Sub
+
+Private Sub localitems_ItemChange(ByVal item As Object)
+On Error GoTo ErrHandler
+
+    If UserRole <= 2 Then
+        If item.Class = Outlook.olMail Then
+            Set newCatMailItem = item
+            CheckItem newCatMailItem, "Robert"
+            Set newCatMailItem = Nothing
+        End If
+    End If
+Exit Sub
+
+ErrHandler:
+    logTxt " localitems_ItemChange", Err.description, Err.number
+Resume Next
 End Sub
