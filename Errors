@@ -1,0 +1,60 @@
+Attribute VB_Name = "modErrors"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Explicit
+Private Const logfilepath = ".txt file location"
+Private Const ProcFilePath = ".txt file location"
+
+Public Sub logDebug(errorSource As String, description As String, number As Integer)
+On Error GoTo ErrHandler
+    Debug.Print "|------------"
+    Debug.Print errorSource
+    Debug.Print "-------------"
+    Debug.Print "error message"
+    Debug.Print description
+    Debug.Print number
+    Debug.Print "-------------"
+    Debug.Print Now
+    Debug.Print "------------|"
+ErrHandler:
+End Sub
+
+Public Sub logTxt(errorSource As String, description As String, number As Integer)
+On Error GoTo ErrHandler
+    Open logfilepath For Append As #1
+    Print #1, "|------------"
+    Print #1, errorSource
+    Print #1, Environ$("username")
+    Print #1, "-------------"
+    Print #1, "error message"
+    Print #1, description
+    Print #1, number
+    Print #1, "-------------"
+    Print #1, Now
+    Print #1, "------------|"
+    Close #1
+Exit Sub
+ErrHandler:
+Close #1
+End Sub
+
+Public Sub textLog()
+On Error GoTo ErrHandling
+    Err.Raise 513
+ErrHandling:
+    logTxt "textLog", Err.description, Err.number
+End Sub
+
+Public Sub logProcedure(location As String)
+On Error GoTo ErrHandler
+    Open ProcFilePath For Append As #2
+        Print #2, Now
+        Print #2, location
+    Close #2
+Exit Sub
+ErrHandler:
+    Close #2
+End Sub
+
