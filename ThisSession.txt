@@ -22,7 +22,7 @@ Public position As Variant '(2 integer array)
 Private Sub Application_Startup()
 On Error GoTo ErrHandler
 
-    Set items = setItems
+    Set items = setItems "sharedemailaddres@company.com"
     getSettings
     
 Exit Sub
