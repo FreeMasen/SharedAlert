@@ -1,0 +1,146 @@
+Attribute VB_Name = "modSettings"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Explicit
+Private Const filepath = "H:\AlertSettings.txt"
+
+Public Sub getSettings()
+On Error GoTo ErrHandler
+Dim E As Integer
+E = 0
+    Dim F As String
+    F = Environ("appdata") & "\Microsoft\Outlook\AlertSettings.txt"
+
+
+    Dim UserRole As Integer
+    Dim newColor(2) As Integer
+    Dim asnColor(2) As Integer
+    Dim pos(1) As Integer
+    Dim line As String
+    Open F For Input As #1
+    Dim itter As Integer
+    itter = 0
+    Do Until EOF(1)
+        Line Input #1, line
+        If InStr(1, line, "userRole") > 0 Then
+            Dim tempRole As Variant
+            tempRole = Split(line, "|")
+            
+            UserRole = CInt(tempRole(1))
+            itter = 1
+        ElseIf InStr(1, line, "newColor") > 0 Then
+            Dim tempNew As Variant
+            tempNew = Split(line, "|")
+            
+            newColor(0) = CInt(tempNew(1))
+            newColor(1) = CInt(tempNew(2))
+            newColor(2) = CInt(tempNew(3))
+            itter = 2
+        ElseIf InStr(1, line, "asnColor") > 0 Then
+            Dim tempAsn As Variant
+            tempAsn = Split(line, "|")
+            asnColor(0) = CInt(tempAsn(1))
+            asnColor(1) = CInt(tempAsn(2))
+            asnColor(2) = CInt(tempAsn(3))
+            itter = 3
+        ElseIf InStr(1, line, "pos") > 0 Then
+            Dim tempPos As Variant
+            tempPos = Split(line, "|")
+            pos(0) = tempPos(1)
+            pos(1) = tempPos(2)
+            itter = 4
+        End If
+    Loop
+    Close #1
+        If itter < 4 Then
+            MsgBox "Error Getting settings, applying defaults " & vbCrLf & _
+            "All alerts on, Yello new msg alert, red new assignment alert"
+            asnColor(0) = 255
+            asnColor(1) = 0
+            asnColor(2) = 0
+            newColor(0) = 255
+            newColor(1) = 255
+            newColor(2) = 0
+            UserRole = 3
+            pos(0) = 0
+            pos(1) = 0
+        End If
+    
+    setSettings UserRole, newColor, asnColor, pos
+    
+Exit Sub
+ErrHandler:
+E = E + 1
+If E < 3 Then
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+ logDebug "getSettings", errorDescription, errorNumber
+ logTxt "getSettings", errorDescription, errorNumber
+Resume Next
+Close #1
+End If
+End Sub
+
+Public Sub saveSettings()
+On Error GoTo ErrHandler
+Dim E As Integer
+E = 0
+    Dim F As String
+    F = Environ("appdata") & "\Microsoft\Outlook\AlertSettings.txt"
+    Dim role As String
+    role = "userRole|" & CStr(ThisOutlookSession.UserRole)
+    Dim ncolor As String
+    ncolor = "newColor|" & CStr(ThisOutlookSession.newMsgAlertColor(0)) & _
+                "|" & CStr(ThisOutlookSession.newMsgAlertColor(1)) & _
+                "|" & CStr(ThisOutlookSession.newMsgAlertColor(2))
+    Dim acolor As String
+    acolor = "asnColor|" & CStr(ThisOutlookSession.newAssnAlertColor(0)) & _
+                "|" & CStr(ThisOutlookSession.newAssnAlertColor(1)) & _
+                "|" & CStr(ThisOutlookSession.newAssnAlertColor(2))
+    Dim Posit As String
+    Posit = "pos|" & CStr(ThisOutlookSession.position(0)) & _
+                "|" & CStr(ThisOutlookSession.position(1))
+    Open F For Output As #1
+    Print #1, role
+    Print #1, ncolor
+    Print #1, acolor
+    Print #1, Posit
+    Close #1
+
+Exit Sub
+    
+ErrHandler:
+If E < 3 Then
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "saveSettings", errorDescription, errorNumber
+    logTxt "saveSettings", errorDescription, errorNumber
+Close #1
+End If
+End Sub
+
+Public Sub setSettings(role As Integer, newMsg As Variant, newAsn As Variant, _
+                        Optional ByVal position As Variant = Nothing)
+On Error GoTo ErrHandler
+    ThisOutlookSession.UserRole = role
+    ThisOutlookSession.newMsgAlertColor = newMsg
+    ThisOutlookSession.newAssnAlertColor = newAsn
+    If IsArray(position) Then
+        ThisOutlookSession.position = position
+    End If
+    
+Exit Sub
+ErrHandler:
+    Dim errorNumber As Integer
+    errorNumber = Err.number
+    Dim errorDescription As String
+    errorDescription = Err.description
+    logDebug "setSettings", errorDescription, errorNumber
+    logTxt "setSettings", errorDescription, errorNumber
+End Sub
